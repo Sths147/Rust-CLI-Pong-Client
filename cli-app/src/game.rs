@@ -283,14 +283,14 @@ impl Game {
 				else if let Event::Key(key_event) = event {
 					match key_event.code {
 						KeyCode::Up => match key_event.kind {
-							KeyEventKind::Press => {up = (true, std::time::Instant::now(), 100)},
-							KeyEventKind::Repeat => {up = (true, std::time::Instant::now(), 100)},
-							KeyEventKind::Release => {up = (false, std::time::Instant::now(), 100)},
+							KeyEventKind::Press => {up = (true, std::time::Instant::now(), 150)},
+							KeyEventKind::Repeat => {up = (true, std::time::Instant::now(), 150)},
+							KeyEventKind::Release => {up = (false, std::time::Instant::now(), 150)},
 						},
 						KeyCode::Down => match key_event.kind {
-							KeyEventKind::Press => {down = (true, std::time::Instant::now(), 100)},
-							KeyEventKind::Repeat => {down = (true, std::time::Instant::now(), 100)},
-							KeyEventKind::Release => {down = (false, std::time::Instant::now(), 100)},
+							KeyEventKind::Press => {down = (true, std::time::Instant::now(), 150)},
+							KeyEventKind::Repeat => {down = (true, std::time::Instant::now(), 150)},
+							KeyEventKind::Release => {down = (false, std::time::Instant::now(), 150)},
 						},						
 						_ => {continue;},
 					}
