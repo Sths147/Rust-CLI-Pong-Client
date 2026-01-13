@@ -9,7 +9,7 @@ use crate::game_demo::Demo;
 use crate::game::{Game, Gameplay};
 use crate::login::Auth;
 use anyhow::Result;
-use crossterm::event;
+use crossterm::event::{self, Event};
 // use console_subscriber;
 use tokio::time::Duration;
 use ratatui::{
@@ -86,7 +86,7 @@ impl Infos {
       CurrentScreen::EndGame => {self.handle_endgame()?},
       CurrentScreen::CreateGame => {self.create_game("online").await?},
       CurrentScreen::PlayGame => {self.handle_game_events().await?},
-      CurrentScreen::ErrorScreen => {self.handle_errors().await},
+      CurrentScreen::ErrorScreen => {self.handle_errors().await?},
       CurrentScreen::AddFriend => {self.friend.borrow_mut().add_friend().await?},
       CurrentScreen::DeleteFriend => {self.friend.borrow_mut().delete_friend().await?},
     }
@@ -100,9 +100,15 @@ impl Infos {
     self.error = error;
     self.screen.set(CurrentScreen::ErrorScreen);
   }
-  async fn handle_errors(&mut self) {
-    std::thread::sleep(Duration::from_secs(2));
+  async fn handle_errors(&mut self) -> Result<()> {
+    loop {
+      let event = event::read()?;
+      if let Event::Key(_) = event {
+        break;
+      }
+    }
     self.screen.set(self.post_error_screen);
+    Ok(())
   }
 }
 

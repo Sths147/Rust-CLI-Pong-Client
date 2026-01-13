@@ -292,8 +292,8 @@ impl ScreenDisplayer for Infos {
     }
     fn display_error_screen(&self, area: Rect, buf: &mut Buffer) {
         let block = Block::bordered().border_set(border::THICK);
-        let spanlist: Vec<Span> = vec!["Error: ".bold(), self.error.as_str().bold()];
-        Paragraph::new(Line::from(spanlist))
+        let linelist: Vec<Line> = vec![Line::from("Error: ".bold() + self.error.as_str().bold()), Line::from("Press any key to continue".bold())];
+        Paragraph::new(linelist)
             .centered()
             .block(block)
             .render(area, buf);
