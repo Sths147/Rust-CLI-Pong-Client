@@ -1,5 +1,3 @@
-use crate::login::Field;
-use crate::LOGO;
 use ratatui::widgets::canvas::{Circle, Rectangle};
 use ratatui::{
     prelude::{
@@ -17,7 +15,9 @@ use ratatui::{
     text::Span,
 };
 
-use super::Infos;
+use crate::login::Field;
+use crate::LOGO;
+use crate::Infos;
 
 pub trait ScreenDisplayer {
     fn display_welcome_screen(&self, area: Rect, buf: &mut Buffer);

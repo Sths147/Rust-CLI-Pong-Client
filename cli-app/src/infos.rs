@@ -1,23 +1,22 @@
 use std::rc::Rc;
 use std::cell::{Cell, RefCell};
-use super::CurrentScreen;
+use anyhow::Result;
+use crossterm::event::{self, Event};
+use tokio::time::Duration;
+use ratatui::{
+  buffer::Buffer,
+  layout::Rect,
+  widgets::Widget,
+  DefaultTerminal, Frame,
+};
+use crate::CurrentScreen;
 use crate::context::Context;
 use crate::infos_events::EventHandler;
 use crate::screen_displays::ScreenDisplayer;
-use crate::friends::{Friends};
+use crate::friends::Friends;
 use crate::game_demo::Demo;
 use crate::game::{Game, Gameplay};
 use crate::login::Auth;
-use anyhow::Result;
-use crossterm::event::{self, Event};
-// use console_subscriber;
-use tokio::time::Duration;
-use ratatui::{
-    buffer::Buffer,
-    layout::Rect,
-    widgets::Widget,
-    DefaultTerminal, Frame,
-};
 
 #[derive(Default)]
 pub struct Infos {

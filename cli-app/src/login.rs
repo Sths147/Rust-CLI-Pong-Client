@@ -1,4 +1,5 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
+use std::rc::Rc;
 use anyhow::{Result, anyhow};
 use tokio_tungstenite::{
     Connector,
@@ -7,11 +8,10 @@ use tokio_tungstenite::{
     connect_async_tls_with_config,
     tungstenite::protocol::Message,
 };
-use crate::Context;
 use tokio::net::TcpStream;
 use tokio::sync::mpsc;
-use futures_util::{StreamExt};
-use std::rc::Rc;
+use futures_util::StreamExt;
+use crate::Context;
 
 #[derive(Default, PartialEq)]
 pub enum Field {

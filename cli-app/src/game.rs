@@ -1,33 +1,31 @@
-use reqwest::{
-	header::HeaderMap,
-};
-
-use crossterm::{
-    event::{self, poll, Event, KeyCode, KeyEventKind},
-};
-
+use reqwest::header::HeaderMap;
+use crossterm::event::{self, poll, Event, KeyCode, KeyEventKind};
 use futures::stream::{StreamExt};
 use futures_util::{SinkExt, stream::SplitStream};
 use futures_util::stream::SplitSink;
-use std::{time::{Duration, Instant}};
+use std::time::{Duration, Instant};
 use std::collections::HashMap;
-
-use crate::utils::should_exit;
 use bytes::Bytes;
 use std::rc::Rc;
-use crate::{Auth, Context};
-use tokio_tungstenite::{connect_async_tls_with_config, tungstenite::Utf8Bytes};
-use tokio_tungstenite::MaybeTlsStream;
-use tokio_tungstenite::WebSocketStream;
-use tokio_tungstenite::Connector;
-use tokio_tungstenite::tungstenite::protocol::Message;
-use tokio_tungstenite::tungstenite::client::IntoClientRequest;
-use crate::CurrentScreen;
+use tokio_tungstenite::{
+	connect_async_tls_with_config,
+	MaybeTlsStream,
+	WebSocketStream,
+	Connector,
+	tungstenite::{
+		Utf8Bytes,
+		protocol::Message,
+		client::IntoClientRequest,
+	},
+};
 use anyhow::{Result, anyhow};
-use crate::Infos;
 use std::cell::RefCell;
 use tokio::sync::{mpsc, watch};
 use tokio::net::TcpStream;
+use crate::{Auth, Context};
+use crate::utils::should_exit;
+use crate::CurrentScreen;
+use crate::Infos;
 
 #[derive(Default)]
 pub struct Game {

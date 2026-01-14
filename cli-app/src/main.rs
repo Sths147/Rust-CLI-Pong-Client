@@ -8,24 +8,22 @@ mod login;
 mod utils;
 mod infos;
 
-use crate::infos::Infos;
 use std::rc::Rc;
 use std::cell::{Cell, RefCell};
-use crate::context::Context;
-use crate::friends::{Friends};
-use crate::login::Auth;
 use anyhow::{Result, anyhow};
-// use console_subscriber;
+use infos::Infos;
+use context::Context;
+use friends::Friends;
+use login::Auth;
 use utils::{
     LOGO,
     CurrentScreen,
     get_location,
   };
 
-  
+
 #[tokio::main]
 async fn main() -> Result<()> {
-  // console_subscriber::init();
   let location = match get_location() {
     Ok(result) => result,
     Err(e) => {return Err(anyhow!("{}", e));},
