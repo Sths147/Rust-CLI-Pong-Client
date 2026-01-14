@@ -7,3 +7,4 @@
 #### `./build.sh` in your console
 ### Then execute:
 #### `./launch.sh $LOCATION` while replacing $LOCATION with the IP:PORT the transcendance servers listens to 
+##### Note: if you want to test in with localhost on linux, replace IP with the docker0 bridge address, usually 172.17.0.1
