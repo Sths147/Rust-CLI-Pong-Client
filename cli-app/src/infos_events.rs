@@ -58,7 +58,15 @@ impl EventHandler for Infos {
               KeyCode::Up => {self.screen.set(CurrentScreen::SignUp);},
               KeyCode::Down => {self.screen.set(CurrentScreen::Login);},
               KeyCode::Right => {
-                self.authent.borrow_mut().create_guest_session().await?;
+                let future = self.authent.borrow().create_guest_session();
+                let credentials = future.await?;
+                //   Ok(credentials) => credentials,
+                //   Err(e) => {
+                //     self.authent.borrow_mut().clear();
+                //     return Err(e)
+                //   }
+                // };
+                self.authent.borrow_mut().set_credentials(credentials);
                 self.screen.set(CurrentScreen::Welcome);
               },
               _ => {},
@@ -97,7 +105,8 @@ impl EventHandler for Infos {
             KeyCode::Backspace => {self.authent.borrow_mut().pop()},
             KeyCode::Tab => {self.authent.borrow_mut().down_field_signup()}
             KeyCode::Enter => {if *self.authent.borrow_mut().get_field() == Field::Password {
-              self.authent.borrow_mut().signup().await?;
+              let credentials = self.authent.borrow().signup().await?;
+              self.authent.borrow_mut().set_credentials(credentials);
               self.screen.set(CurrentScreen::Welcome);
             } else {self.authent.borrow_mut().down_field_signup()}} 
             _ => {},
@@ -121,7 +130,8 @@ impl EventHandler for Infos {
             KeyCode::Backspace => {self.authent.borrow_mut().pop();},
             KeyCode::Tab => {self.authent.borrow_mut().down_field_login()},
             KeyCode::Enter => {if *self.authent.borrow_mut().get_field() == Field::Totp {
-                self.authent.borrow_mut().login().await?;
+                let credentials = self.authent.borrow().login().await?;
+                self.authent.borrow_mut().set_credentials(credentials);
                 self.screen.set(CurrentScreen::Welcome);
               } else {
                 self.authent.borrow_mut().down_field_login()

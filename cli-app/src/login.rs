@@ -121,7 +121,7 @@ impl Auth {
         self.totp.clear();
         self.field = Field::Mail;
     }
-    pub async fn signup(&mut self) -> Result<()> {
+    pub async fn signup(& self) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
         let apiloc = format!("https://{}/api/user/create", self.context.location);
         let mut body: HashMap<&str, &str> = HashMap::new();
         body.insert("username", self.get_username());
@@ -133,21 +133,15 @@ impl Auth {
                                                 .send()
                                                 .await?;
         let body: serde_json::Value = response.json().await?;
-        if let Some(token) = body["token"].as_str() {
-            self.set_token(token);
+        if body["token"].as_str().is_some() {
+            self.login().await
         } else if let Some(error) = body["message"].as_str() {
-            self.clear();
-            return Err(anyhow!(error.to_string()));
+            Err(anyhow!(error.to_string()))
         } else {
-            self.clear();
-            return Err(anyhow!("Error signing up"));
+            Err(anyhow!("Error signing up"))
         }
-        if let Err(error) = self.login().await {
-            return Err(anyhow!(error.to_string()));
-        }
-        Ok(())
     }
-    pub async fn login(&mut self) -> Result<()> {
+    pub async fn login(&self) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
         let apiloc = format!("https://{}/api/user/login", self.context.location);
         let mut body: HashMap<&str, &str> = HashMap::new();
         body.insert("email", self.get_email());
@@ -161,37 +155,34 @@ impl Auth {
                                                 .send()
                                                 .await?;
         let body: serde_json::Value = response.json().await?;
-        self.clear();
         if let Some(token) = body["token"].as_str() {
-            self.set_token(token);
+            let (id, receiver) = self.get_id_and_launch_chat(token.to_string()).await?;
+            Ok((token.to_string(), id, receiver))
         } else if let Some(error) = body["message"].as_str() {
-            return Err(anyhow!(error.to_string()));
+            Err(anyhow!(error.to_string()))
         } else {
-            return Err(anyhow!("Error signing up"));
+            Err(anyhow!("Error signing up"))
         }
-        self.get_id_and_launch_chat().await?;
-        Ok(())
     }
-    pub async fn create_guest_session(&mut self) -> Result<()> {
+    pub async fn create_guest_session(&self) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
         let apiloc = format!("https://{}/api/user/create_guest", self.context.location);
         let res = self.context.client.post(apiloc)
             .send()
             .await?;
         let body: serde_json::Value = res.json().await?;
         if let Some(token) = body["token"].as_str() {
-            self.set_token(token);
+            let (id, receiver) = self.get_id_and_launch_chat(token.to_string()).await?;
+            Ok((token.to_string(), id, receiver))
         } else if let Some(error) = body["message"].as_str() {
             return Err(anyhow!(error.to_string()));
         } else {
             return Err(anyhow!("Error signing up"));
         }
-        self.get_id_and_launch_chat().await?;
-        Ok(())
     }
-    pub async fn get_id_and_launch_chat(&mut self) -> Result<()> {
+    pub async fn get_id_and_launch_chat(&self, token: String) -> Result<(u64, mpsc::Receiver<serde_json::Value>)> {
         let apiloc = format!("https://{}/api/user/get_profile_token", self.context.location);
         let mut body = HashMap::new();
-        body.insert("token", self.get_token());
+        body.insert("token", token);
         let res = self.context.client.post(apiloc)
             .header("content-type", "application/json")
             .json(&body)
@@ -203,9 +194,12 @@ impl Auth {
             _ => return Err(anyhow!("Error from server, no data received")),
         };
         let receiver = enter_chat_room(&self.context.location, player_id).await?;
-        self.id = player_id;
-        self.receiver = Some(receiver);
-        Ok(())
+        Ok((player_id, receiver))
+    }
+    pub fn set_credentials(&mut self, credentials: (String, u64, mpsc::Receiver<serde_json::Value>)) {
+        self.token = credentials.0;
+        self.id = credentials.1;
+        self.receiver = Some(credentials.2);
     }
 }
 

@@ -73,9 +73,21 @@ impl Infos {
   }
   async fn handle_events(&mut self) -> Result<()> {
     match self.screen.get() {
-      CurrentScreen::FirstScreen => {self.handle_first_events().await?},
-      CurrentScreen::SignUp => {self.handle_signup_events().await?},
-      CurrentScreen::Login => {self.handle_login_events().await?},
+      CurrentScreen::FirstScreen => {if let Err(e) = self.handle_first_events().await {
+          self.authent.borrow_mut().clear();
+          return Err(e)
+        }
+      },
+      CurrentScreen::SignUp => {if let Err(e) = self.handle_signup_events().await {
+          self.authent.borrow_mut().clear();
+          return Err(e)
+        }
+      },
+      CurrentScreen::Login => {if let Err(e) = self.handle_login_events().await {
+          self.authent.borrow_mut().clear();
+          return Err(e)
+        }
+      },
       CurrentScreen::Welcome => {self.handle_welcome_events()?},
       CurrentScreen::GameChoice => {self.handle_gamechoice_events()?},
       CurrentScreen::SocialLife => {self.handle_social_events().await?},
