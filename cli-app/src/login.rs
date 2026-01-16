@@ -39,7 +39,7 @@ pub struct Auth {
 impl Auth {
     pub fn new(context: Rc<Context>) -> Self {
         Auth {
-            context: context,
+            context,
             ..Default::default()
         }
     }

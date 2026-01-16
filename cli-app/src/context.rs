@@ -8,7 +8,7 @@ pub struct Context {
 impl Context {
   pub fn new(location: String) -> Self {
     Context {
-      location: location,
+      location,
       client: Client::builder()
                       .danger_accept_invalid_certs(true)
                       .build()

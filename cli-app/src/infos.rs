@@ -35,9 +35,9 @@ impl Infos {
   pub fn new(context: Rc<Context>, auth: Rc<RefCell<Auth>>, 
       screen: Rc<Cell<CurrentScreen>>, friends: Rc<RefCell<Friends>>) -> Infos {
     Infos {
-      context: context,
+      context,
       authent: auth,
-      screen: screen,
+      screen,
       friend: friends,
       ..Default::default()
     }

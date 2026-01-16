@@ -1,5 +1,4 @@
 use anyhow::{Result, anyhow};
-use serde_json;
 use crossterm::event::poll;
 use crate::CurrentScreen;
 use std::time::Duration;
@@ -26,9 +25,9 @@ pub struct Friends {
 impl Friends {
     pub fn new(context: Rc<Context>, auth: Rc<RefCell<Auth>>, screen: Rc<Cell<CurrentScreen>>) -> Self {
         Friends {
-            auth: auth,
-            context: context,
-            screen: screen,
+            auth,
+            context,
+            screen,
             ..Default::default()
         }
     }

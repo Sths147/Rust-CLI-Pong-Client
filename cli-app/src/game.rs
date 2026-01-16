@@ -63,7 +63,7 @@ pub trait Gameplay {
 
 impl Gameplay for Infos {
 	async fn create_game(&mut self, mode: &str) -> Result<()> {
-		send_post_game_request(&self, mode).await?;
+		send_post_game_request(self, mode).await?;
 		loop {
 			match poll(Duration::from_millis(16)) {
 				Ok(true) => {
@@ -71,13 +71,10 @@ impl Gameplay for Infos {
 						break ;
 					}
 					let event = event::read()?;
-					match should_exit(&event) {
-						Ok(true) => {
-							self.send_remove_from_queue_request().await?;
-							self.screen.set(CurrentScreen::GameChoice);
-							return Ok(());
-						}
-						_ => {},
+					if let Ok(true) = should_exit(&event) {
+						self.send_remove_from_queue_request().await?;
+						self.screen.set(CurrentScreen::GameChoice);
+						return Ok(());
 					}
 				},
 				Ok(false) => {
@@ -89,7 +86,7 @@ impl Gameplay for Infos {
 			};
 		}
 		let response = self.authent.borrow_mut().receiver.as_mut().expect("empty receiver").try_recv()?;
-		let game = Game::new(&self, response).await?;
+		let game = Game::new(self, response).await?;
 		self.game = game;
 		self.screen.set(crate::CurrentScreen::StartGame);
 		Ok(())
@@ -104,10 +101,9 @@ impl Gameplay for Infos {
 			Some(receiver) => receiver,
 			_ => {return Err(anyhow!("State receiver is empty"));}
 		};
-		if let Some(checker) = &mut self.game.game_checker {
-			if let Ok(true) = checker.has_changed() {
+		if let Some(checker) = &mut self.game.game_checker
+			&& let Ok(true) = checker.has_changed() {
 				self.screen.set(crate::CurrentScreen::GameChoice);
-			}
 		};
 		if let Some(sender) = &self.game.game_sender {
 			state_receiver.changed().await?;
@@ -128,11 +124,9 @@ impl Gameplay for Infos {
 			let event = event::read()?;
 			if should_exit(&event)? {
 				self.screen.set(crate::CurrentScreen::GameChoice);
-			} else if let Event::Key(keyevent) = event {
-				match keyevent.code {
-					KeyCode::Enter => {self.screen.set(crate::CurrentScreen::GameChoice)},
-					_ => {},
-				}
+			} else if let Event::Key(keyevent) = event
+				&& keyevent.code == KeyCode::Enter {
+					self.screen.set(crate::CurrentScreen::GameChoice);
 			}
 		}
 		Ok(())
@@ -172,8 +166,8 @@ impl Game {
 			context: info.context.clone(),
 			auth: info.authent.clone(),
 			game_id,
-			player_side: player_side,
-			opponent_name: opponent_name,
+			player_side,
+			opponent_name,
 			..Default::default()
 		})
 	}
@@ -258,15 +252,15 @@ impl Game {
 		let mut down: (bool, Instant, u128) = (false, std::time::Instant::now(), 0);
 		let mut to_send = String::new();
 		loop {
-			if let Ok(_) = receiver.try_recv() {
+			if receiver.try_recv().is_ok() {
 				break;
 			}
 			to_send.clear();
-			if up.0 == true {
-				to_send.insert_str(0, "U");
+			if up.0 {
+				to_send.insert(0, 'U');
 			}
-			if down.0 == true {
-				to_send.insert_str(0, "D");
+			if down.0 {
+				to_send.insert(0, 'D');
 			}
 			if !to_send.is_empty() {
 				let send_it = to_send.clone();
@@ -274,7 +268,7 @@ impl Game {
 			}
 			if poll(Duration::from_millis(16))? {
 				let event = event::read()?;
-				if should_exit(&event)? == true {
+				if should_exit(&event)? {
 					game_sender.send(true)?;
 					break;
 				} 
