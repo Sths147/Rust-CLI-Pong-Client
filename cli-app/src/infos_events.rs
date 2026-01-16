@@ -19,43 +19,41 @@ pub trait EventHandler {
 impl EventHandler for Infos {
   fn handle_welcome_events(&mut self) -> Result<()> {
     let event = event::read()?;
-    if should_exit(&event)? == true {
+    if should_exit(&event)? {
       self.exit = true;
     }
-    else if let Event::Key(key_event) = event {
-      if key_event.kind == KeyEventKind::Press {
+    else if let Event::Key(key_event) = event
+      && key_event.kind == KeyEventKind::Press {
         match key_event.code {
             KeyCode::Up => {self.screen.set(CurrentScreen::GameChoice);},
             KeyCode::Right => {self.screen.set(CurrentScreen::SocialLife);},
             _ => {},
         }
       }
-    }
     Ok(())
   }
   fn handle_gamechoice_events(&mut self) -> Result<()> {
     let event = event::read()?;
-    if should_exit(&event)? == true {
+    if should_exit(&event)?{
       self.exit = true;
     }
-    else if let Event::Key(key_event) = event {
-      if key_event.kind == KeyEventKind::Press {
+    else if let Event::Key(key_event) = event
+      && key_event.kind == KeyEventKind::Press {
           match key_event.code {
               KeyCode::Right => {self.screen.set(CurrentScreen::CreateGame);},
               KeyCode::Left => {self.screen.set(CurrentScreen::Welcome);},
               _ => {},
-          }
-      }
+        }
     }
     Ok(())
   }
   async fn handle_first_events(&mut self) -> Result<()> {
     let event = event::read()?;
-    if should_exit(&event)? == true {
+    if should_exit(&event)? {
       self.exit = true;
     }
-    else if let Event::Key(key_event) = event {
-      if key_event.kind == KeyEventKind::Press {
+    else if let Event::Key(key_event) = event
+      && key_event.kind == KeyEventKind::Press {
           match key_event.code {
               KeyCode::Up => {self.screen.set(CurrentScreen::SignUp);},
               KeyCode::Down => {self.screen.set(CurrentScreen::Login);},
@@ -65,14 +63,13 @@ impl EventHandler for Infos {
               },
               _ => {},
           }
-      }
     }
     Ok(())
   }
   async fn handle_social_events(&mut self) -> Result<()> {
     self.friend.borrow_mut().get_indexed_friends().await?;
     let event = event::read()?;
-    if should_exit(&event)? == true {
+    if should_exit(&event)? {
         self.exit = true;
     }
     else if let Event::Key(key_event) = event {
@@ -87,7 +84,7 @@ impl EventHandler for Infos {
     Ok(()) 
   }
   async fn handle_signup_events(&mut self) -> Result<()> {
-      if poll(Duration::from_millis(500))? == true {
+      if poll(Duration::from_millis(500))? {
         let event = event::read()?;
         if should_exit(&event)? {
           self.authent.borrow_mut().clear();
@@ -111,7 +108,7 @@ impl EventHandler for Infos {
       Ok(())
   }
   async fn handle_login_events(&mut self) -> Result<()> {
-      if poll(Duration::from_millis(500))? == true {
+      if poll(Duration::from_millis(500))? {
         let event = event::read()?;
         if should_exit(&event)? {
           self.authent.borrow_mut().clear();
@@ -139,7 +136,7 @@ impl EventHandler for Infos {
   }
   fn handle_friends_events(&mut self) -> Result<()> {
       let event = event::read()?;
-      if should_exit(&event)? == true {
+      if should_exit(&event)? {
         self.screen.set(CurrentScreen::SocialLife)     
       }
       else if let Event::Key(key_event) = event {

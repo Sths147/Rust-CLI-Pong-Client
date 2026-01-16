@@ -54,10 +54,9 @@ impl Infos {
           CurrentScreen::FirstScreen | CurrentScreen::GameChoice | 
             CurrentScreen::SocialLife | CurrentScreen::Welcome => {
               self.demo.update();
-              if event::poll(Duration::from_millis(16))? {
-                if let Err(e) = self.handle_events().await {
+              if event::poll(Duration::from_millis(16))?
+                && let Err(e) = self.handle_events().await {
                   self.error(e.to_string());
-                }
               }
             },
           _ => {

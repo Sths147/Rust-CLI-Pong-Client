@@ -15,8 +15,9 @@ pub const LOGO: &str = r#"
   "#;
 
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Default)]
 pub enum CurrentScreen {
+  #[default]
   FirstScreen,
   Welcome,
   Login,
@@ -33,12 +34,6 @@ pub enum CurrentScreen {
   ErrorScreen,
 }
 
-impl Default for CurrentScreen {
-  fn default() -> Self {
-      CurrentScreen::FirstScreen
-  }
-}
-
 pub fn get_location() -> Result<String> {
     let mut args = std::env::args();
     args.next();
@@ -52,12 +47,11 @@ pub fn get_location() -> Result<String> {
 }
 
 pub fn should_exit(event: &Event) -> Result<bool> {
-  if let Event::Key(key_event) = event {
-    if key_event.code == KeyCode::Esc || 
+  if let Event::Key(key_event) = event
+    && (key_event.code == KeyCode::Esc || 
     (key_event.code == KeyCode::Char('c') 
-    && key_event.modifiers == KeyModifiers::CONTROL) {
+    && key_event.modifiers == KeyModifiers::CONTROL)) {
       return Ok(true);
     }
-  }
   Ok(false)
 }

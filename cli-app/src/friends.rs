@@ -38,8 +38,8 @@ impl Friends {
             let mut _str_tmp: String = String::new();
             for element in &friends_list[..] {
                     _str_tmp = element.0.clone();
-                    if element.1 == false {
-                        _str_tmp = _str_tmp + " (Pending)";
+                    if !element.1 {
+                        _str_tmp += " (Pending)";
                     }
                 printable.push(_str_tmp);
             }
@@ -68,7 +68,7 @@ impl Friends {
         Ok(())
     }
     pub async fn add_friend(&mut self) -> Result<()> {
-        if poll(Duration::from_millis(500))? == true {
+        if poll(Duration::from_millis(500))? {
             let event = event::read()?;
             if should_exit(&event)? {
                 self.friend_tmp.clear();
@@ -89,7 +89,7 @@ impl Friends {
         Ok(())
     }
     pub async fn delete_friend(&mut self) -> Result<()> {
-        if poll(Duration::from_millis(500))? == true {
+        if poll(Duration::from_millis(500))? {
             let event = event::read()?;
             if should_exit(&event)? {
                 self.friend_tmp.clear();
@@ -191,7 +191,7 @@ impl Friends {
                             Some(map) => map,
                             _ => {continue;},
                         };
-                        let name = Self::look_for_name2(&self, object).await?;
+                        let name = self.look_for_name(object).await?;
                         match map["pending"].as_u64() {
                         Some(0) => {
                             result.push((name, true));
@@ -210,14 +210,14 @@ impl Friends {
         }
         Ok(result)
     }
-    async fn look_for_name2(&self, object: &serde_json::Value) -> Result<String> {
+    async fn look_for_name(&self, object: &serde_json::Value) -> Result<String> {
         let id_to_find = match object["user1_id"].as_u64() {
             Some(user1) => {
                 let id = self.auth.borrow().id;
                 if user1 != id {
                 user1
                 } else {
-                    let user2 = match object["user2_id"].as_u64() {
+                    match object["user2_id"].as_u64() {
                         Some(user2) => {
                             if user2 != id {
                                 user2
@@ -226,8 +226,7 @@ impl Friends {
                             }
                         }
                         _ => {return Err(anyhow!("from user ids"));}
-                    };
-                    user2
+                    }
                 }
             },
             _ => {return Err(anyhow!("from user ids"));}
@@ -242,11 +241,11 @@ impl Friends {
             200 => {
                 let body: serde_json::Value = response.json().await?;
                 match body["name"].as_str() {
-                    Some(name) => {return Ok(name.to_string());},
-                    _ => {return Err(anyhow!("No name in "))}
+                    Some(name) => {Ok(name.to_string())},
+                    _ => {Err(anyhow!("No name in "))}
                 }
             },
-            _ => {return Err(anyhow!("Error"));},
+            _ => {Err(anyhow!("Error"))},
         }
     }
     pub fn tick(&mut self) {

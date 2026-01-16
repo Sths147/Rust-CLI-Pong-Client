@@ -308,24 +308,21 @@ impl Game {
 	async fn read_socket(mut ws_read: SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>, 
 			state_sender: watch::Sender<(Option<Bytes>, Option<Utf8Bytes>)>, socket_checker: watch::Receiver<bool>) {
 		loop {
-			match ws_read.next().await {
-				Some(msg) => {
-						match msg {
-							Ok(Message::Binary(b)) => {
-								if let Err(_) = state_sender.send((Some(b), None)) {
-									break;
-							}
-						}
-						Ok(Message::Text(s)) => {
-							if let Err(_) = state_sender.send((None, Some(s))) {
+			if let Some(msg) = ws_read.next().await {
+					match msg {
+						Ok(Message::Binary(b)) => {
+							if state_sender.send((Some(b), None)).is_err() {
 								break;
-							}
 						}
-						Ok(Message::Close(_)) => {},
-					_ => {}
 					}
-				}
+					Ok(Message::Text(s)) => {
+						if state_sender.send((None, Some(s))).is_err() {
+							break;
+						}
+					}
+					Ok(Message::Close(_)) => {},
 				_ => {}
+				}
 			}
 			match socket_checker.has_changed() {
 				Ok(false) => {},

@@ -190,11 +190,10 @@ impl ScreenDisplayer for Infos {
                 .render(layout[1], buf);
             }
     fn display_endgame(&self, area: Rect, buf: &mut Buffer) {
-        let sentence: &str;
-        match self.game.game_stats.winner {
-            true => {sentence = "You Win :)"},
-            false => {sentence = "You lose :("},
-        }
+        let sentence: &str = match self.game.game_stats.winner {
+            true => {"You Win :)"},
+            false => {"You lose :("},
+        };
         let block = Block::bordered().border_set(border::THICK);
         let spanlist: Vec<Span> = vec![sentence.bold(), " Press Enter to Continue".bold()];
         Paragraph::new(Line::from(spanlist))
@@ -352,7 +351,7 @@ impl ScreenDisplayer for Infos {
             .y_bounds([0.0, 100.0])
             .paint(|ctx| {
                 ctx.draw(&Circle {
-                    x: self.demo.ball_x as f64,
+                    x: self.demo.ball_x,
                     y: self.demo.ball_y,
                     radius: 0.5,
                     color: Color::Yellow,

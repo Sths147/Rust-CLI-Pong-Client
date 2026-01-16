@@ -112,11 +112,7 @@ impl Auth {
         self.blink = !self.blink;
     }
     pub fn blinks(&self, field: Field) -> bool {
-        if self.blink && field == self.field {
-            true
-        } else {
-            false
-        }
+        self.blink && field == self.field
     }
     pub fn clear(&mut self) {
         self.email.clear();
@@ -240,14 +236,11 @@ async fn enter_chat_room(location: &String, id: u64) -> Result<mpsc::Receiver<se
 async fn   chat(mut ws_stream: WebSocketStream<MaybeTlsStream<TcpStream>>, sender: mpsc::Sender<serde_json::Value>) -> Result<()> {
     while let Some(msg) =  ws_stream.next().await {
         let last_message = match msg {
-            Ok(result) => match result {
-                Message::Text(result) => result,
-                _ => {continue;},
-            },
+            Ok(Message::Text(result)) => result,
             _ => {continue;},
         };
-        let message: serde_json::Value = serde_json::from_str(&last_message.as_str())?;
-        let _ = match message["gameId"].as_str() {
+        let message: serde_json::Value = serde_json::from_str(last_message.as_str())?;
+        match message["gameId"].as_str() {
             Some(_) => {sender.send(message).await?},
             _ => {continue;}
         };
