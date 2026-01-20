@@ -123,15 +123,15 @@ impl ScreenDisplayer for Infos {
                 .border_set(border::THICK);
         let mut friends_display: Vec<String> = vec![];
         let height: usize = (area.height - 2) as usize;
-        let max: usize = match (self.friend.borrow().index * height + height + 1) >= self.friend.borrow().friends_list.len() {
-            true => self.friend.borrow().friends_list.len(),
-            false => (self.friend.borrow().index * height) + height + 1
+        let max: usize = match (self.friend.index * height + height + 1) >= self.friend.friends_list.len() {
+            true => self.friend.friends_list.len(),
+            false => (self.friend.index * height) + height + 1
         };
-        let min = match self.friend.borrow().index * height < self.friend.borrow().friends_list.len() {
-            true => self.friend.borrow().index * height,
-            false => self.friend.borrow().friends_list.len(),
+        let min = match self.friend.index * height < self.friend.friends_list.len() {
+            true => self.friend.index * height,
+            false => self.friend.friends_list.len(),
         };
-        for friend in &self.friend.borrow().friends_list[min..max] {
+        for friend in &self.friend.friends_list[min..max] {
             friends_display.push(friend.clone());
         }
         let lines: Vec<Line> = friends_display
@@ -291,7 +291,7 @@ impl ScreenDisplayer for Infos {
     }
     fn display_error_screen(&self, area: Rect, buf: &mut Buffer) {
         let block = Block::bordered().border_set(border::THICK);
-        let linelist: Vec<Line> = vec![Line::from("Error: ".bold() + self.error.as_str().bold()), Line::from("Press any key to continue".bold())];
+        let linelist: Vec<Line> = vec![("Error: ".bold() + self.error.as_str().bold()), Line::from("Press any key to continue".bold())];
         Paragraph::new(linelist)
             .centered()
             .block(block)
@@ -299,7 +299,7 @@ impl ScreenDisplayer for Infos {
     }
     fn display_addfriends_screen(&self, area: Rect, buf: &mut Buffer) {
         let friend = format!("{}{}", 
-            self.friend.borrow().friend_tmp, if self.friend.borrow().blink {"|"} else {""});
+            self.friend.friend_tmp, if self.friend.blink {"|"} else {""});
         let content = vec![
             Line::from(Span::styled(
                 "Add a friend",
@@ -322,7 +322,7 @@ impl ScreenDisplayer for Infos {
     }
     fn display_delete_friends_screen(&self, area: Rect, buf: &mut Buffer) {
         let friend = format!("{}{}", 
-            self.friend.borrow().friend_tmp, if self.friend.borrow().blink {"|"} else {""});
+            self.friend.friend_tmp, if self.friend.blink {"|"} else {""});
         let content = vec![
             Line::from(Span::styled(
                 "Delete a friend",

@@ -79,7 +79,7 @@ impl EventHandler for Infos {
     Ok(())
   }
   async fn handle_social_events(&mut self) -> Result<()> {
-    self.friend.borrow_mut().get_indexed_friends().await?;
+    self.friend.get_indexed_friends().await?;
     let event = event::read()?;
     if should_exit(&event)? {
         self.exit = true;
@@ -175,13 +175,13 @@ impl EventHandler for Infos {
           KeyCode::Down => {
             self.screen.set(CurrentScreen::DeleteFriend)
           },
-          KeyCode::Right => {if self.friend.borrow().index < self.friend.borrow().index_max {self.friend.borrow_mut().index += 1}},
-          KeyCode::Left => {if self.friend.borrow().index > usize::MIN {self.friend.borrow_mut().index -= 1}},
+          KeyCode::Right => {if self.friend.index < self.friend.index_max {self.friend.index += 1}},
+          KeyCode::Left => {if self.friend.index > usize::MIN {self.friend.index -= 1}},
           _ => {},
           }
       }
       else if let Event::Resize(_, _) = event {
-        self.friend.borrow_mut().index = 0;
+        self.friend.index = 0;
       }
       Ok(())
   }

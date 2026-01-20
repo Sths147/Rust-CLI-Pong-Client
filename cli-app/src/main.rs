@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
   let context = Rc::new(Context::new(location.clone()));
   let auth = Rc::new(RefCell::new(Auth::default()));
   let screen = Rc::new(Cell::new(CurrentScreen::default()));
-  let friends = Rc::new(RefCell::new(Friends::new(context.clone(), auth.clone(), screen.clone())));
+  let friends = Friends::new(context.clone(), auth.clone(), screen.clone());
   let mut terminal = ratatui::init();
   let game_main = Infos::new(context, auth, screen, friends);
   let app_result = game_main.run(&mut terminal).await;

@@ -200,9 +200,9 @@ pub async fn create_guest_session(context: Rc<Context>) -> Result<(String, u64, 
         let (id, receiver) = get_id_and_launch_chat(context, token.to_string()).await?;
         Ok((token.to_string(), id, receiver))
     } else if let Some(error) = body["message"].as_str() {
-        return Err(anyhow!(error.to_string()));
+        Err(anyhow!(error.to_string()))
     } else {
-        return Err(anyhow!("Error signing up"));
+        Err(anyhow!("Error signing up"))
     }
 }
 

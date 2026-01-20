@@ -27,6 +27,8 @@ use crate::utils::should_exit;
 use crate::CurrentScreen;
 use crate::Infos;
 
+type GameChannel = (watch::Sender<(Option<Bytes>, Option<Utf8Bytes>)>, watch::Receiver<(Option<Bytes>, Option<Utf8Bytes>)>);
+
 #[derive(Default)]
 pub struct Game {
 	auth: Rc<RefCell<Auth>>,
@@ -194,9 +196,7 @@ impl Game {
 			).await?;
 		let (ws_write, ws_read) = ws_stream.split();
 		let (sender, receiver): (mpsc::Sender<u8>, mpsc::Receiver<u8>) = mpsc::channel(1);
-		let (state_sender, state_receiver): 
-			(watch::Sender<(Option<Bytes>, Option<Utf8Bytes>)>, watch::Receiver<(Option<Bytes>, Option<Utf8Bytes>)>) 
-				= watch::channel((None, None));
+		let (state_sender, state_receiver): GameChannel = watch::channel((None, None));
 		self.receiver = Some(state_receiver);
 		let (game_sender, game_checker): (watch::Sender<bool>, watch::Receiver<bool>) = watch::channel(true);
 		self.game_checker = Some(game_checker);
@@ -224,28 +224,20 @@ impl Game {
 	}
 	fn decode_and_update(&mut self, msg: Bytes) -> Result<()> {
 		if msg.len() == 26 {
-			let (left_y, right_y, ball_x, ball_y, speed_x, speed_y, score1, score2 ) = Self::decode(msg)?;
-			self.game_stats.left_y = left_y;
-			self.game_stats.right_y = right_y;
-			self.game_stats.ball_x = ball_x;
-			self.game_stats.ball_y = ball_y;
-			self.game_stats.speed_x = speed_x;
-			self.game_stats.speed_y = speed_y;
-			self.game_stats.player1_score = score1;
-			self.game_stats.player2_score = score2;
+			self.game_stats = Self::decode(msg)?;
 		}
 		Ok(())
 	}
-	fn decode(msg: Bytes) -> Result<(f32, f32, f32, f32, f32, f32, u8, u8)> {
+	fn decode(msg: Bytes) -> Result<GameStats> {
 		let left_y: f32 = f32::from_le_bytes(msg[0..4].try_into()?);
 		let right_y: f32 = f32::from_le_bytes(msg[4..8].try_into()?);
 		let ball_x: f32 = f32::from_le_bytes(msg[8..12].try_into()?);
 		let ball_y: f32 = f32::from_le_bytes(msg[12..16].try_into()?);
-		let _speed_x: f32 = f32::from_le_bytes(msg[16..20].try_into()?);
-		let _speed_y: f32 = f32::from_le_bytes(msg[20..24].try_into()?);
+		let speed_x: f32 = f32::from_le_bytes(msg[16..20].try_into()?);
+		let speed_y: f32 = f32::from_le_bytes(msg[20..24].try_into()?);
 		let player1_score: u8 =  msg[24];
 		let player2_score: u8 =  msg[25];
-		Ok((left_y, right_y, ball_x, ball_y, _speed_x, _speed_y, player1_score, player2_score))
+		Ok(GameStats {left_y, right_y, ball_x, ball_y, speed_x, speed_y, player1_score, player2_score, winner: false})
 	}
 	async fn send_game(mut ws_write: SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>, mut receiver: mpsc::Receiver<u8>, game_sender: watch::Sender<bool>) -> Result<()> {
 		let mut up: (bool, Instant, u128) = (false, std::time::Instant::now(), 0);

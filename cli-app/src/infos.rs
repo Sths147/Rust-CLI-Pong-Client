@@ -22,7 +22,7 @@ use crate::login::Auth;
 pub struct Infos {
   pub context: Rc<Context>,
   pub authent: Rc<RefCell<Auth>>,
-  pub friend: Rc<RefCell<Friends>>,
+  pub friend: Friends,
   pub screen: Rc<Cell<CurrentScreen>>,
   pub game: Game,
   pub demo: Demo,
@@ -33,7 +33,7 @@ pub struct Infos {
 
 impl Infos {
   pub fn new(context: Rc<Context>, auth: Rc<RefCell<Auth>>, 
-      screen: Rc<Cell<CurrentScreen>>, friends: Rc<RefCell<Friends>>) -> Infos {
+      screen: Rc<Cell<CurrentScreen>>, friends: Friends) -> Infos {
     Infos {
       context,
       authent: auth,
@@ -45,7 +45,7 @@ impl Infos {
   pub async fn run(mut self, terminal: &mut DefaultTerminal) -> Result<()> {
     while !self.exit {
         if self.screen.get() == CurrentScreen::FriendsDisplay {
-          self.friend.borrow_mut().update_friends_index(terminal).await?;
+          self.friend.update_friends_index(terminal).await?;
         }
         if let Err(e) = terminal.draw(|frame| self.draw(frame)) {
           self.error(e.to_string());
@@ -97,8 +97,8 @@ impl Infos {
       CurrentScreen::CreateGame => {self.create_game("online").await?},
       CurrentScreen::PlayGame => {self.handle_game_events().await?},
       CurrentScreen::ErrorScreen => {self.handle_errors().await?},
-      CurrentScreen::AddFriend => {self.friend.borrow_mut().add_friend().await?},
-      CurrentScreen::DeleteFriend => {self.friend.borrow_mut().delete_friend().await?},
+      CurrentScreen::AddFriend => {self.friend.add_friend().await?},
+      CurrentScreen::DeleteFriend => {self.friend.delete_friend().await?},
     }
   Ok(())
   }
