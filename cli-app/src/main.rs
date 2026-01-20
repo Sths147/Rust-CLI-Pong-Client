@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
     Err(e) => {return Err(anyhow!("{}", e));},
   };
   let context = Rc::new(Context::new(location.clone()));
-  let auth = Rc::new(RefCell::new(Auth::new(Rc::clone(&context))));
+  let auth = Rc::new(RefCell::new(Auth::default()));
   let screen = Rc::new(Cell::new(CurrentScreen::default()));
   let friends = Rc::new(RefCell::new(Friends::new(context.clone(), auth.clone(), screen.clone())));
   let mut terminal = ratatui::init();

@@ -11,7 +11,7 @@ use tokio_tungstenite::{
 use tokio::net::TcpStream;
 use tokio::sync::mpsc;
 use futures_util::StreamExt;
-use crate::Context;
+use crate::{Context};
 
 #[derive(Default, PartialEq)]
 pub enum Field {
@@ -24,7 +24,6 @@ pub enum Field {
 
 #[derive(Default)]
 pub struct Auth {
-    context: Rc<Context>,
     token: String,
     email: String,
     password: String,
@@ -37,12 +36,6 @@ pub struct Auth {
 }
 
 impl Auth {
-    pub fn new(context: Rc<Context>) -> Self {
-        Auth {
-            context,
-            ..Default::default()
-        }
-    }
     pub fn up_field_signup(&mut self) {
         match self.field {
             Field::Password => {self.field = Field::Username},
@@ -121,80 +114,11 @@ impl Auth {
         self.totp.clear();
         self.field = Field::Mail;
     }
-    pub async fn signup(& self) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
-        let apiloc = format!("https://{}/api/user/create", self.context.location);
-        let mut body: HashMap<&str, &str> = HashMap::new();
-        body.insert("username", self.get_username());
-        body.insert("passw", self.get_password());
-        body.insert("email", self.get_email());
-        let response = self.context.client.post(apiloc)
-                                                .header("content-type", "application/json")
-                                                .json(&body)
-                                                .send()
-                                                .await?;
-        let body: serde_json::Value = response.json().await?;
-        if body["token"].as_str().is_some() {
-            self.login().await
-        } else if let Some(error) = body["message"].as_str() {
-            Err(anyhow!(error.to_string()))
-        } else {
-            Err(anyhow!("Error signing up"))
-        }
+    pub fn get_signup_infos(&self) -> (String, String, String)  {
+        (self.get_username().to_string(), self.get_password().to_string(), self.get_email().to_string())
     }
-    pub async fn login(&self) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
-        let apiloc = format!("https://{}/api/user/login", self.context.location);
-        let mut body: HashMap<&str, &str> = HashMap::new();
-        body.insert("email", self.get_email());
-        body.insert("passw", self.get_password());
-        if !self.get_totp().is_empty() {
-            body.insert("totp", self.get_totp());
-        }
-        let response = self.context.client.post(apiloc)
-                                                .header("content-type", "application/json")
-                                                .json(&body)
-                                                .send()
-                                                .await?;
-        let body: serde_json::Value = response.json().await?;
-        if let Some(token) = body["token"].as_str() {
-            let (id, receiver) = self.get_id_and_launch_chat(token.to_string()).await?;
-            Ok((token.to_string(), id, receiver))
-        } else if let Some(error) = body["message"].as_str() {
-            Err(anyhow!(error.to_string()))
-        } else {
-            Err(anyhow!("Error signing up"))
-        }
-    }
-    pub async fn create_guest_session(&self) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
-        let apiloc = format!("https://{}/api/user/create_guest", self.context.location);
-        let res = self.context.client.post(apiloc)
-            .send()
-            .await?;
-        let body: serde_json::Value = res.json().await?;
-        if let Some(token) = body["token"].as_str() {
-            let (id, receiver) = self.get_id_and_launch_chat(token.to_string()).await?;
-            Ok((token.to_string(), id, receiver))
-        } else if let Some(error) = body["message"].as_str() {
-            return Err(anyhow!(error.to_string()));
-        } else {
-            return Err(anyhow!("Error signing up"));
-        }
-    }
-    pub async fn get_id_and_launch_chat(&self, token: String) -> Result<(u64, mpsc::Receiver<serde_json::Value>)> {
-        let apiloc = format!("https://{}/api/user/get_profile_token", self.context.location);
-        let mut body = HashMap::new();
-        body.insert("token", token);
-        let res = self.context.client.post(apiloc)
-            .header("content-type", "application/json")
-            .json(&body)
-            .send()
-            .await?;
-        let value: serde_json::Value = res.json().await?;
-        let player_id = match value["id"].as_u64(){
-            Some(nbr) => nbr,
-            _ => return Err(anyhow!("Error from server, no data received")),
-        };
-        let receiver = enter_chat_room(&self.context.location, player_id).await?;
-        Ok((player_id, receiver))
+    pub fn get_login_infos(&self) -> (String, String, String) {
+        (self.get_email().to_string(), self.get_password().to_string(), self.get_totp().to_string())
     }
     pub fn set_credentials(&mut self, credentials: (String, u64, mpsc::Receiver<serde_json::Value>)) {
         self.token = credentials.0;
@@ -203,6 +127,84 @@ impl Auth {
     }
 }
 
+pub async fn signup(context: Rc<Context>, signup_infos: (String, String, String)) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
+    let apiloc = format!("https://{}/api/user/create", context.location);
+    let mut body: HashMap<&str, &str> = HashMap::new();
+    body.insert("username", &signup_infos.0);
+    body.insert("passw", &signup_infos.1);
+    body.insert("email", &signup_infos.2);
+    let response = context.client.post(apiloc)
+                                            .header("content-type", "application/json")
+                                            .json(&body)
+                                            .send()
+                                            .await?;
+    let body: serde_json::Value = response.json().await?;
+    if body["token"].as_str().is_some() {
+        login(context, (signup_infos.2, signup_infos.1, String::new())).await
+    } else if let Some(error) = body["message"].as_str() {
+        Err(anyhow!(error.to_string()))
+    } else {
+        Err(anyhow!("Error signing up"))
+    }
+}
+
+pub async fn login(context: Rc<Context>, login_infos: (String, String, String)) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
+    let apiloc = format!("https://{}/api/user/login", context.location);
+    let mut body: HashMap<&str, &str> = HashMap::new();
+    body.insert("email", &login_infos.0);
+    body.insert("passw", &login_infos.1);
+    if !login_infos.2.is_empty() {
+        body.insert("totp", &login_infos.2);
+    }
+    let response = context.client.post(apiloc)
+                                            .header("content-type", "application/json")
+                                            .json(&body)
+                                            .send()
+                                            .await?;
+    let body: serde_json::Value = response.json().await?;
+    if let Some(token) = body["token"].as_str() {
+        let (id, receiver) = get_id_and_launch_chat(context.clone(), token.to_string()).await?;
+        Ok((token.to_string(), id, receiver))
+    } else if let Some(error) = body["message"].as_str() {
+        Err(anyhow!(error.to_string()))
+    } else {
+        Err(anyhow!("Error signing up"))
+    }
+}
+
+pub async fn get_id_and_launch_chat(context: Rc<Context>, token: String) -> Result<(u64, mpsc::Receiver<serde_json::Value>)> {
+    let apiloc = format!("https://{}/api/user/get_profile_token", context.location);
+    let mut body = HashMap::new();
+    body.insert("token", token);
+    let res = context.client.post(apiloc)
+        .header("content-type", "application/json")
+        .json(&body)
+        .send()
+        .await?;
+    let value: serde_json::Value = res.json().await?;
+    let player_id = match value["id"].as_u64(){
+        Some(nbr) => nbr,
+        _ => return Err(anyhow!("Error from server, no data received")),
+    };
+    let receiver = enter_chat_room(&context.location, player_id).await?;
+    Ok((player_id, receiver))
+}
+
+pub async fn create_guest_session(context: Rc<Context>) -> Result<(String, u64, mpsc::Receiver<serde_json::Value>)> {
+    let apiloc = format!("https://{}/api/user/create_guest", context.location);
+    let res = context.client.post(apiloc)
+        .send()
+        .await?;
+    let body: serde_json::Value = res.json().await?;
+    if let Some(token) = body["token"].as_str() {
+        let (id, receiver) = get_id_and_launch_chat(context, token.to_string()).await?;
+        Ok((token.to_string(), id, receiver))
+    } else if let Some(error) = body["message"].as_str() {
+        return Err(anyhow!(error.to_string()));
+    } else {
+        return Err(anyhow!("Error signing up"));
+    }
+}
 
 async fn enter_chat_room(location: &String, id: u64) -> Result<mpsc::Receiver<serde_json::Value>> {
     let connector = Connector::NativeTls(

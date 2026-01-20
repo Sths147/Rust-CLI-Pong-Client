@@ -1,7 +1,12 @@
 use std::time::Duration;
 use anyhow::Result;
 use crossterm::event::{self, poll, Event, KeyCode, KeyEventKind};
-use crate::login::Field;
+use crate::login::{
+  Field,
+  create_guest_session,
+  login,
+  signup,
+};
 use crate::CurrentScreen;
 use crate::utils::should_exit;
 use crate::infos::Infos;
@@ -58,14 +63,13 @@ impl EventHandler for Infos {
               KeyCode::Up => {self.screen.set(CurrentScreen::SignUp);},
               KeyCode::Down => {self.screen.set(CurrentScreen::Login);},
               KeyCode::Right => {
-                let future = self.authent.borrow().create_guest_session();
-                let credentials = future.await?;
-                //   Ok(credentials) => credentials,
-                //   Err(e) => {
-                //     self.authent.borrow_mut().clear();
-                //     return Err(e)
-                //   }
-                // };
+                let credentials = match create_guest_session(self.context.clone()).await {
+                    Ok(credentials) => credentials,
+                    Err(e) => {
+                      self.authent.borrow_mut().clear();
+                      return Err(e)
+                    }
+                };
                 self.authent.borrow_mut().set_credentials(credentials);
                 self.screen.set(CurrentScreen::Welcome);
               },
@@ -105,7 +109,14 @@ impl EventHandler for Infos {
             KeyCode::Backspace => {self.authent.borrow_mut().pop()},
             KeyCode::Tab => {self.authent.borrow_mut().down_field_signup()}
             KeyCode::Enter => {if *self.authent.borrow_mut().get_field() == Field::Password {
-              let credentials = self.authent.borrow().signup().await?;
+              let signup_infos = self.authent.borrow().get_signup_infos();
+              let credentials = match signup(self.context.clone(), signup_infos).await {
+                Ok(credentials) => credentials,
+                    Err(e) => {
+                      self.authent.borrow_mut().clear();
+                      return Err(e)
+                    }
+              };
               self.authent.borrow_mut().set_credentials(credentials);
               self.screen.set(CurrentScreen::Welcome);
             } else {self.authent.borrow_mut().down_field_signup()}} 
@@ -130,7 +141,14 @@ impl EventHandler for Infos {
             KeyCode::Backspace => {self.authent.borrow_mut().pop();},
             KeyCode::Tab => {self.authent.borrow_mut().down_field_login()},
             KeyCode::Enter => {if *self.authent.borrow_mut().get_field() == Field::Totp {
-                let credentials = self.authent.borrow().login().await?;
+                let logins = self.authent.borrow().get_login_infos();
+                let credentials = match login(self.context.clone(), logins).await {
+                  Ok(credentials) => credentials,
+                    Err(e) => {
+                      self.authent.borrow_mut().clear();
+                      return Err(e)
+                    }
+                };
                 self.authent.borrow_mut().set_credentials(credentials);
                 self.screen.set(CurrentScreen::Welcome);
               } else {
