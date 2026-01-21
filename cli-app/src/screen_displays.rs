@@ -1,25 +1,20 @@
 use ratatui::widgets::canvas::{Circle, Rectangle};
 use ratatui::{
-    prelude::{
-        Color,
-        Layout,
-        Constraint,
-        Direction,
-    },
     buffer::Buffer,
-    layout::{Rect, Alignment},
-    style::{Style, Modifier, Stylize},
-    symbols::{border, Marker},
-    text::{Line},
-    widgets::{Block, Paragraph, Widget, canvas::Canvas, Borders},
+    layout::{Alignment, Rect},
+    prelude::{Color, Constraint, Direction, Layout},
+    style::{Modifier, Style, Stylize},
+    symbols::{Marker, border},
+    text::Line,
     text::Span,
+    widgets::{Block, Borders, Paragraph, Widget, canvas::Canvas},
 };
 
-use crate::login::Field;
-use crate::LOGO;
 use crate::Infos;
+use crate::LOGO;
+use crate::login::Field;
 
-pub trait ScreenDisplayer {
+pub(crate) trait ScreenDisplayer {
     fn display_welcome_screen(&self, area: Rect, buf: &mut Buffer);
     fn display_gamechoice_screen(&self, area: Rect, buf: &mut Buffer);
     fn display_social_screen(&self, area: Rect, buf: &mut Buffer);
@@ -39,61 +34,49 @@ pub trait ScreenDisplayer {
 impl ScreenDisplayer for Infos {
     fn display_first_screen(&self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(vec![
-                            Constraint::Max(10),
-                            Constraint::Fill(1),
-                        ])
-                        .split(area);
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Max(10), Constraint::Fill(1)])
+            .split(area);
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
-                " Menu: ↑ Sign up ".bold(),
-                "↓ Login ".bold(),
-                "→  Sign in as guest ".bold(),
-                "ESC. Quit ".bold(),
+            " Menu: ↑ Sign up ".bold(),
+            "↓ Login ".bold(),
+            "→  Sign in as guest ".bold(),
+            "ESC. Quit ".bold(),
         ]);
         print_block(instructions, layout[0], buf);
     }
     fn display_welcome_screen(&self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(vec![
-                            Constraint::Max(10),
-                            Constraint::Fill(1),
-                        ])
-                        .split(area);
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Max(10), Constraint::Fill(1)])
+            .split(area);
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
-                " Menu: ↑ Game ".bold(),
-                "→ Social Life ".bold(),
-                "ESC. Quit ".bold(),
+            " Menu: ↑ Game ".bold(),
+            "→ Social Life ".bold(),
+            "ESC. Quit ".bold(),
         ]);
         print_block(instructions, layout[0], buf);
     }
     fn display_gamechoice_screen(&self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(vec![
-                            Constraint::Max(10),
-                            Constraint::Fill(1),
-                        ])
-                        .split(area);
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Max(10), Constraint::Fill(1)])
+            .split(area);
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
-                " Menu: → Online ".bold(),
-                "← Back  ".bold(),
-                "ESC. Quit ".bold(),
+            " Menu: → Online ".bold(),
+            "← Back  ".bold(),
+            "ESC. Quit ".bold(),
         ]);
         print_block(instructions, layout[0], buf);
     }
     fn display_social_screen(&self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(vec![
-                            Constraint::Max(10),
-                            Constraint::Fill(1),
-                        ])
-                        .split(area);
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Max(10), Constraint::Fill(1)])
+            .split(area);
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
             " Menu: → Your Friends  ".bold(),
@@ -109,7 +92,7 @@ impl ScreenDisplayer for Infos {
             .block(block)
             .render(area, buf);
     }
-    fn display_friends_screen(&self, area: Rect, buf: &mut Buffer){
+    fn display_friends_screen(&self, area: Rect, buf: &mut Buffer) {
         let instructions = Line::from(vec![
             " Menu: ↑ Add friend ".bold(),
             "↓ Delete friend ".bold(),
@@ -118,15 +101,16 @@ impl ScreenDisplayer for Infos {
             "ESC. Back".bold(),
         ]);
         let block = Block::bordered()
-                .title(Line::from("Your Friends").bold().centered())
-                .title_bottom(instructions.centered())
-                .border_set(border::THICK);
+            .title(Line::from("Your Friends").bold().centered())
+            .title_bottom(instructions.centered())
+            .border_set(border::THICK);
         let mut friends_display: Vec<String> = vec![];
         let height: usize = (area.height - 2) as usize;
-        let max: usize = match (self.friend.index * height + height + 1) >= self.friend.friends_list.len() {
-            true => self.friend.friends_list.len(),
-            false => (self.friend.index * height) + height + 1
-        };
+        let max: usize =
+            match (self.friend.index * height + height + 1) >= self.friend.friends_list.len() {
+                true => self.friend.friends_list.len(),
+                false => (self.friend.index * height) + height + 1,
+            };
         let min = match self.friend.index * height < self.friend.friends_list.len() {
             true => self.friend.index * height,
             false => self.friend.friends_list.len(),
@@ -135,22 +119,19 @@ impl ScreenDisplayer for Infos {
             friends_display.push(friend.clone());
         }
         let lines: Vec<Line> = friends_display
-                                    .iter()
-                                    .map(|friend| Line::from(friend.clone().bold()))
-                                    .collect();
+            .iter()
+            .map(|friend| Line::from(friend.clone().bold()))
+            .collect();
         Paragraph::new(lines)
-                .centered()
-                .block(block)
-                .render(area, buf);
+            .centered()
+            .block(block)
+            .render(area, buf);
     }
     fn display_played_game(&self, area: Rect, buf: &mut Buffer) {
         let layout = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints(vec![
-                            Constraint::Fill(1),
-                            Constraint::Max(3),
-                        ])
-                        .split(area);
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Fill(1), Constraint::Max(3)])
+            .split(area);
         Canvas::default()
             .block(Block::bordered().title("Pong".bold()))
             .marker(Marker::Braille)
@@ -179,20 +160,28 @@ impl ScreenDisplayer for Infos {
                 });
             })
             .render(layout[0], buf);
-            let line = Line::from(vec![
-                    format!("You: {}", self.game.game_stats.player1_score).bold(),
-                    "    |     ".bold(),
-                    format!("{}: {}", self.game.opponent_name, self.game.game_stats.player2_score).bold(),
-                ]);
-            Paragraph::new(line)
-                .block(Block::bordered().border_set(border::THICK).title("Score".bold()))
-                .centered()
-                .render(layout[1], buf);
-            }
+        let line = Line::from(vec![
+            format!("You: {}", self.game.game_stats.player1_score).bold(),
+            "    |     ".bold(),
+            format!(
+                "{}: {}",
+                self.game.opponent_name, self.game.game_stats.player2_score
+            )
+            .bold(),
+        ]);
+        Paragraph::new(line)
+            .block(
+                Block::bordered()
+                    .border_set(border::THICK)
+                    .title("Score".bold()),
+            )
+            .centered()
+            .render(layout[1], buf);
+    }
     fn display_endgame(&self, area: Rect, buf: &mut Buffer) {
         let sentence: &str = match self.game.game_stats.winner {
-            true => {"You Win :)"},
-            false => {"You lose :("},
+            true => "You Win :)",
+            false => "You lose :(",
         };
         let block = Block::bordered().border_set(border::THICK);
         let spanlist: Vec<Span> = vec![sentence.bold(), " Press Enter to Continue".bold()];
@@ -202,14 +191,24 @@ impl ScreenDisplayer for Infos {
             .render(area, buf);
     }
     fn display_signup_screen(&self, area: Rect, buf: &mut Buffer) {
-        let mail = format!("{}{}", 
+        let mail = format!(
+            "{}{}",
             self.authent.borrow().get_email(),
-            if self.authent.borrow().blinks(Field::Mail) {"|"} else {""}
-            );
-        let username = format!("{}{}", 
+            if self.authent.borrow().blinks(Field::Mail) {
+                "|"
+            } else {
+                ""
+            }
+        );
+        let username = format!(
+            "{}{}",
             self.authent.borrow().get_username(),
-            if self.authent.borrow().blinks(Field::Username) {"|"} else {""}
-            );
+            if self.authent.borrow().blinks(Field::Username) {
+                "|"
+            } else {
+                ""
+            }
+        );
         let mut password = String::new();
         for _ in 0..self.authent.borrow().get_password().len() {
             password.push('*');
@@ -237,19 +236,20 @@ impl ScreenDisplayer for Infos {
             ]),
         ];
         Paragraph::new(content)
-            .block(
-                Block::default()
-                    .title("Signup")
-                    .borders(Borders::ALL),
-            )
+            .block(Block::default().title("Signup").borders(Borders::ALL))
             .alignment(Alignment::Left)
             .render(area, buf);
     }
     fn display_login_screen(&self, area: Rect, buf: &mut Buffer) {
-        let mail = format!("{}{}", 
+        let mail = format!(
+            "{}{}",
             self.authent.borrow().get_email(),
-            if self.authent.borrow().blinks(Field::Mail) {"|"} else {""}
-            );
+            if self.authent.borrow().blinks(Field::Mail) {
+                "|"
+            } else {
+                ""
+            }
+        );
         let mut password = String::new();
         for _ in 0..self.authent.borrow().get_password().len() {
             password.push('*');
@@ -257,10 +257,15 @@ impl ScreenDisplayer for Infos {
         if self.authent.borrow().blinks(Field::Password) {
             password.push('|')
         }
-        let totp = format!("{}{}", 
+        let totp = format!(
+            "{}{}",
             self.authent.borrow().get_totp(),
-            if self.authent.borrow().blinks(Field::Totp) {"|"} else {""}
-            );
+            if self.authent.borrow().blinks(Field::Totp) {
+                "|"
+            } else {
+                ""
+            }
+        );
         let content = vec![
             Line::from(Span::styled(
                 "Login as user",
@@ -291,15 +296,21 @@ impl ScreenDisplayer for Infos {
     }
     fn display_error_screen(&self, area: Rect, buf: &mut Buffer) {
         let block = Block::bordered().border_set(border::THICK);
-        let linelist: Vec<Line> = vec![("Error: ".bold() + self.error.as_str().bold()), Line::from("Press any key to continue".bold())];
+        let linelist: Vec<Line> = vec![
+            ("Error: ".bold() + self.error.as_str().bold()),
+            Line::from("Press any key to continue".bold()),
+        ];
         Paragraph::new(linelist)
             .centered()
             .block(block)
             .render(area, buf);
     }
     fn display_addfriends_screen(&self, area: Rect, buf: &mut Buffer) {
-        let friend = format!("{}{}", 
-            self.friend.friend_tmp, if self.friend.blink {"|"} else {""});
+        let friend = format!(
+            "{}{}",
+            self.friend.friend_tmp,
+            if self.friend.blink { "|" } else { "" }
+        );
         let content = vec![
             Line::from(Span::styled(
                 "Add a friend",
@@ -318,11 +329,14 @@ impl ScreenDisplayer for Infos {
                     .borders(Borders::ALL),
             )
             .alignment(Alignment::Left)
-            .render(area, buf);        
+            .render(area, buf);
     }
     fn display_delete_friends_screen(&self, area: Rect, buf: &mut Buffer) {
-        let friend = format!("{}{}", 
-            self.friend.friend_tmp, if self.friend.blink {"|"} else {""});
+        let friend = format!(
+            "{}{}",
+            self.friend.friend_tmp,
+            if self.friend.blink { "|" } else { "" }
+        );
         let content = vec![
             Line::from(Span::styled(
                 "Delete a friend",
@@ -341,10 +355,10 @@ impl ScreenDisplayer for Infos {
                     .borders(Borders::ALL),
             )
             .alignment(Alignment::Left)
-            .render(area, buf);        
+            .render(area, buf);
     }
     fn print_demo(&self, area: Rect, buf: &mut Buffer) {
-                Canvas::default()
+        Canvas::default()
             .block(Block::bordered())
             .marker(Marker::Braille)
             .x_bounds([0.0, 100.0])
@@ -377,10 +391,10 @@ impl ScreenDisplayer for Infos {
 
 fn print_block(instructions: Line, area: Rect, buf: &mut Buffer) {
     let block = Block::bordered()
-            .title_bottom(instructions.centered())
-            .border_set(border::THICK);
+        .title_bottom(instructions.centered())
+        .border_set(border::THICK);
     Paragraph::new(LOGO)
-            .centered()
-            .block(block)
-            .render(area, buf);        
+        .centered()
+        .block(block)
+        .render(area, buf);
 }

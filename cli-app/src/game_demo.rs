@@ -1,14 +1,14 @@
-pub struct Demo {
-    pub ball_x: f64,
-    pub ball_y: f64,
-    pub ball_dx: f64,
-    pub ball_dy: f64,
-    pub paddle_left_y: f64,
-    pub paddle_right_y: f64,
+pub(crate) struct Demo {
+    pub(crate) ball_x: f64,
+    pub(crate) ball_y: f64,
+    pub(crate) ball_dx: f64,
+    pub(crate) ball_dy: f64,
+    pub(crate) paddle_left_y: f64,
+    pub(crate) paddle_right_y: f64,
 }
 
 impl Demo {
-    pub fn update(&mut self) {
+    pub(crate) fn update(&mut self) {
         self.ball_x += self.ball_dx;
         self.ball_y += self.ball_dy;
         if self.ball_x <= 5.0 || self.ball_x >= 95.0 {
