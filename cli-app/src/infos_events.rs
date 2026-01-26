@@ -113,7 +113,7 @@ impl EventHandler for Infos {
                     KeyCode::Backspace => self.authent.borrow_mut().pop(),
                     KeyCode::Tab => self.authent.borrow_mut().down_field_signup(),
                     KeyCode::Enter => {
-                        if *self.authent.borrow_mut().get_field() == Field::Password {
+                        if self.authent.borrow_mut().field == Field::Password {
                             let signup_infos = self.authent.borrow().get_signup_infos();
                             let credentials = match signup(self.context.clone(), signup_infos).await
                             {
@@ -152,7 +152,7 @@ impl EventHandler for Infos {
                     }
                     KeyCode::Tab => self.authent.borrow_mut().down_field_login(),
                     KeyCode::Enter => {
-                        if *self.authent.borrow_mut().get_field() == Field::Totp {
+                        if self.authent.borrow_mut().field == Field::Totp {
                             let logins = self.authent.borrow().get_login_infos();
                             let credentials = match login(self.context.clone(), logins).await {
                                 Ok(credentials) => credentials,

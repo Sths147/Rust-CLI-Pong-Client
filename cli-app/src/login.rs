@@ -19,11 +19,11 @@ pub(crate) enum Field {
 #[derive(Default)]
 pub(crate) struct Auth {
     pub(crate) token: String,
-    email: String,
-    password: String,
-    username: String,
-    totp: String,
-    field: Field,
+    pub(crate) email: String,
+    pub(crate) password: String,
+    pub(crate) username: String,
+    pub(crate) totp: String,
+    pub(crate) field: Field,
     pub(crate) id: u64,
     pub(crate) blink: bool,
     pub(crate) receiver: Option<mpsc::Receiver<serde_json::Value>>,
@@ -98,21 +98,6 @@ impl Auth {
             }
         }
     }
-    pub(crate) fn get_email(&self) -> &str {
-        &self.email
-    }
-    pub(crate) fn get_password(&self) -> &str {
-        &self.password
-    }
-    pub(crate) fn get_username(&self) -> &str {
-        &self.username
-    }
-    pub(crate) fn get_totp(&self) -> &str {
-        &self.totp
-    }
-    pub(crate) fn get_field(&self) -> &Field {
-        &self.field
-    }
     pub(crate) fn tick(&mut self) {
         self.blink = !self.blink;
     }
@@ -128,16 +113,16 @@ impl Auth {
     }
     pub(crate) fn get_signup_infos(&self) -> (String, String, String) {
         (
-            self.get_username().to_string(),
-            self.get_password().to_string(),
-            self.get_email().to_string(),
+            self.username.to_string(),
+            self.password.to_string(),
+            self.email.to_string(),
         )
     }
     pub(crate) fn get_login_infos(&self) -> (String, String, String) {
         (
-            self.get_email().to_string(),
-            self.get_password().to_string(),
-            self.get_totp().to_string(),
+            self.email.to_string(),
+            self.password.to_string(),
+            self.totp.to_string(),
         )
     }
     pub(crate) fn set_credentials(
