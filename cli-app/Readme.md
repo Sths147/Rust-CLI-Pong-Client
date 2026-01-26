@@ -5,8 +5,8 @@ running this tool enables you to connect to the Pong's website and play Pong on 
 ### While running the app modifies the delay of appearance of the Repeat Event of your keyboard, so close your app when you're done playing
 Indeed, in order to improve playability of the game, we modify the settings of the keyboard events while the game is played. 
 be sure to leave the game once you are done. The settings set back are: 500ms delay for KeyRepeat and 30ms delay between repeats
-you can adjust those settings with the `xset r rate [delay-500ms] [delay-30ms]` command
-users on wayland won't be impacted by these settings
+you can adjust those settings with the ```bash xset r rate [firstRepeatDelay] [betweenRepeatDelay]``` command
+users using wayland won't be impacted by these settings
 
 ## How to play:
 
