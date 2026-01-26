@@ -194,7 +194,7 @@ impl ScreenDisplayer for Infos {
     fn display_signup_screen(&self, area: Rect, buf: &mut Buffer) {
         let mail = format!(
             "{}{}",
-            self.authent.borrow().get_email(),
+            self.authent.borrow().email,
             if self.authent.borrow().blinks(Field::Mail) {
                 "|"
             } else {
@@ -203,7 +203,7 @@ impl ScreenDisplayer for Infos {
         );
         let username = format!(
             "{}{}",
-            self.authent.borrow().get_username(),
+            self.authent.borrow().username,
             if self.authent.borrow().blinks(Field::Username) {
                 "|"
             } else {
@@ -211,7 +211,7 @@ impl ScreenDisplayer for Infos {
             }
         );
         let mut password = String::new();
-        for _ in 0..self.authent.borrow().get_password().len() {
+        for _ in 0..self.authent.borrow().password.len() {
             password.push('*');
         }
         if self.authent.borrow().blinks(Field::Password) {
@@ -244,7 +244,7 @@ impl ScreenDisplayer for Infos {
     fn display_login_screen(&self, area: Rect, buf: &mut Buffer) {
         let mail = format!(
             "{}{}",
-            self.authent.borrow().get_email(),
+            self.authent.borrow().email,
             if self.authent.borrow().blinks(Field::Mail) {
                 "|"
             } else {
@@ -252,7 +252,7 @@ impl ScreenDisplayer for Infos {
             }
         );
         let mut password = String::new();
-        for _ in 0..self.authent.borrow().get_password().len() {
+        for _ in 0..self.authent.borrow().password.len() {
             password.push('*');
         }
         if self.authent.borrow().blinks(Field::Password) {
@@ -260,7 +260,7 @@ impl ScreenDisplayer for Infos {
         }
         let totp = format!(
             "{}{}",
-            self.authent.borrow().get_totp(),
+            self.authent.borrow().totp,
             if self.authent.borrow().blinks(Field::Totp) {
                 "|"
             } else {
