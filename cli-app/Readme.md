@@ -18,4 +18,4 @@ users using wayland won't be impacted by these settings
 
 `./launch.sh $LOCATION` while replacing $LOCATION with the IP:PORT the transcendance servers listens to 
 
-Note: if the game server runs on the same machine as the cli app, localhost will not work as application runs in a container. You can replace IP with the docker0 bridge address, usually 172.17.0.1.
+Note: This application runs on a Docker container, so if the game server runs on the same machine as the cli app, running `./launch localhost:XXXX` will not work. You can replace IP with the docker0 bridge address, usually 172.17.0.1.
