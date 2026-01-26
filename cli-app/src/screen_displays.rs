@@ -39,10 +39,11 @@ impl ScreenDisplayer for Infos {
             .split(area);
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
-            " Menu: ↑ Sign up ".bold(),
-            "↓ Login ".bold(),
-            "→  Sign in as guest ".bold(),
-            "ESC. Quit ".bold(),
+            " Menu:".bold(),
+            "  ↑. Sign up".bold(),
+            "  ↓. Login".bold(),
+            "  →. Sign in as guest".bold(),
+            "  ESC. Quit ".bold(),
         ]);
         print_block(instructions, layout[0], buf);
     }
@@ -53,9 +54,9 @@ impl ScreenDisplayer for Infos {
             .split(area);
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
-            " Menu: ↑ Game ".bold(),
-            "→ Social Life ".bold(),
-            "ESC. Quit ".bold(),
+            " Menu:  ↑ Game ".bold(),
+            " → Social Life ".bold(),
+            " ESC. Quit ".bold(),
         ]);
         print_block(instructions, layout[0], buf);
     }
@@ -67,7 +68,7 @@ impl ScreenDisplayer for Infos {
         self.print_demo(layout[1], buf);
         let instructions = Line::from(vec![
             " Menu: → Online ".bold(),
-            "← Back  ".bold(),
+            " ← Back  ".bold(),
             "ESC. Quit ".bold(),
         ]);
         print_block(instructions, layout[0], buf);
@@ -86,7 +87,7 @@ impl ScreenDisplayer for Infos {
         print_block(instructions, layout[0], buf);
     }
     fn display_waiting_screen(&self, area: Rect, buf: &mut Buffer) {
-        let block = Block::bordered().border_set(border::THICK);
+        let block = Block::bordered().title_bottom("Menu: ESC. Quit".bold().into_centered_line()).border_set(border::THICK);
         Paragraph::new(Line::from("Searching for opponent".bold()))
             .centered()
             .block(block)
@@ -95,10 +96,10 @@ impl ScreenDisplayer for Infos {
     fn display_friends_screen(&self, area: Rect, buf: &mut Buffer) {
         let instructions = Line::from(vec![
             " Menu: ↑ Add friend ".bold(),
-            "↓ Delete friend ".bold(),
-            "← Previous ".bold(),
-            "→ Next ".bold(),
-            "ESC. Back".bold(),
+            " ↓ Delete friend ".bold(),
+            " ← Previous ".bold(),
+            " → Next ".bold(),
+            " ESC. Back ".bold(),
         ]);
         let block = Block::bordered()
             .title(Line::from("Your Friends").bold().centered())
@@ -236,7 +237,7 @@ impl ScreenDisplayer for Infos {
             ]),
         ];
         Paragraph::new(content)
-            .block(Block::default().title("Signup").borders(Borders::ALL))
+            .block(Block::default().title("Signup").borders(Borders::ALL).title_bottom("Menu: ESC. Quit  Enter. Ok".bold().into_centered_line()))
             .alignment(Alignment::Left)
             .render(area, buf);
     }
@@ -289,7 +290,8 @@ impl ScreenDisplayer for Infos {
             .block(
                 Block::default()
                     .title("Signup".bold())
-                    .borders(Borders::ALL),
+                    .borders(Borders::ALL)
+                    .title_bottom("Menu: Enter. Ok  ESC. Quit".bold().into_centered_line())
             )
             .alignment(Alignment::Left)
             .render(area, buf);
@@ -326,6 +328,7 @@ impl ScreenDisplayer for Infos {
             .block(
                 Block::default()
                     .title("Add Friend".bold())
+                    .title_bottom("Menu: Enter. Ok  ESC. Quit ".bold().into_centered_line())
                     .borders(Borders::ALL),
             )
             .alignment(Alignment::Left)
@@ -352,6 +355,7 @@ impl ScreenDisplayer for Infos {
             .block(
                 Block::default()
                     .title("Delete friend".bold())
+                    .title_bottom("Menu: Enter. Ok  ESC. Quit ".bold().into_centered_line())
                     .borders(Borders::ALL),
             )
             .alignment(Alignment::Left)
