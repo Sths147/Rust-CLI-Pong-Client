@@ -33,8 +33,7 @@ Note: This application runs on a Docker container, so if the game server runs on
 ```bash
 ./launch localhost:XXXX
 ```
-will not work. You can replace IP with the docker0 bridge address or your IP address. You can get informations with the 
+will not work. You can replace IP with the docker0 bridge address or your IP address. You can get informations with the following command:
 ```bash
 ip address
 ``` 
-command
