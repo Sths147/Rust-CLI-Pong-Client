@@ -196,7 +196,7 @@ pub(crate) async fn get_id_and_launch_chat(
 ) -> Result<(u64, mpsc::Receiver<serde_json::Value>)> {
     let apiloc = format!("https://{}/api/user/get_profile_token", context.location);
     let mut body = HashMap::new();
-    body.insert("token", token);
+    body.insert("token", &token);
     let res = context
         .client
         .post(apiloc)
@@ -209,7 +209,7 @@ pub(crate) async fn get_id_and_launch_chat(
         Some(nbr) => nbr,
         _ => return Err(anyhow!("Error from server, no data received")),
     };
-    let receiver = enter_chat_room(&context.location, player_id).await?;
+    let receiver = enter_chat_room(&context.location, &token).await?;
     Ok((player_id, receiver))
 }
 
@@ -229,13 +229,13 @@ pub(crate) async fn create_guest_session(
     }
 }
 
-async fn enter_chat_room(location: &String, id: u64) -> Result<mpsc::Receiver<serde_json::Value>> {
+async fn enter_chat_room(location: &String, token: &String) -> Result<mpsc::Receiver<serde_json::Value>> {
     let connector = Connector::NativeTls(
         native_tls::TlsConnector::builder()
             .danger_accept_invalid_certs(true)
             .build()?,
     );
-    let request = format!("wss://{}/api/chat?userid={}", location, id);
+    let request = format!("wss://{}/api/chat?userid={}", location, token);
     let (ws_stream, _) =
         connect_async_tls_with_config(request, None, false, Some(connector)).await?;
     let (sender, receiver): (
