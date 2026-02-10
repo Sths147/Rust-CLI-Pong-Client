@@ -16,6 +16,7 @@ Users using Wayland won't be impacted by these settings
 ## Requirements:
 
 docker
+
 git
 
 ## Installation:
