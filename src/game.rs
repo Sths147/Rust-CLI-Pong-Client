@@ -86,12 +86,6 @@ impl Game {
             ..Default::default()
         })
     }
-    // async fn launch_countdown(&self) -> Result<()> {
-    // 	//3...2....1....0 -->
-    // 	//Affiche le compte a rebours puis a 0 START GAME
-    // 	self.start_game().await?;
-    // 	Ok(())
-    // }
     /// Start a new game
     pub(crate) async fn start_game(&mut self) -> Result<()> {
         let ws_stream = self.connect_wss().await?;
