@@ -28,5 +28,4 @@ WORKDIR /app
 COPY --from=dev app/target/release/transcendence_cli_app ./cli_app
 RUN chmod +x ./cli_app
 
-
 CMD ["bash", "./entrypoint.sh"]
